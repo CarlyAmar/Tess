@@ -2,9 +2,10 @@
 #define DRIVETRAIN
 //#include "servo.h"
 #include "Ports.h"
-void driveForward(float);
+void driveForward(int);
+void driving(int, int);
 void driveBackward(float);
-void drive(float,float);
+void drive(void *x);
 int getLeftTicks();
 int getRightTicks();
 float getLeftDistance();
