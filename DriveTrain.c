@@ -1,5 +1,5 @@
 #include "DriveTrain.h"
-//#include "abdrive.h" //Y U NO WORK
+#include "abdrive.h"
 #include "servo.h"
 #include "Tess.h"
 
@@ -9,7 +9,7 @@
 extern volatile int leftSpeed;
 extern volatile int rightSpeed;
 
-unsigned int stack[40 + 50];
+unsigned int stack[40 + 25];
 static int driveCog;
 
 void initDrive()
@@ -24,8 +24,8 @@ void drive(void *x)
 {
     while (1)
     {
-        leftSpeed++;
-        rightSpeed++;
+        //servo_speed(LEFT_SERVO, leftSpeed);
+        //servo_Speed(RIGHT_SERVO, rightSpeed);
         //debug("Left: %d ", leftSpeed);
         //debug("Right: %d\n", rightSpeed);
         //TODO find out why abdrive wont compile and use drive_speed to set the speed to the volatile speed ints
@@ -41,4 +41,9 @@ void testDrive()
         debug("Right: %d\n", rightSpeed);
         //TODO find out why abdrive wont compile and use drive_speed to set the speed to the volatile speed ints
         //pause(250);
+}
+void turn()
+{
+    leftSpeed = -1;
+    rightSpeed = 1;
 }

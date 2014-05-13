@@ -1,25 +1,33 @@
 //By Zack Alfakir
 
+
 #define DEBUG
-#define DRIVE
+//#define BUTTON
+//#define DRIVE
 //#define LEFT_ENCODER
 //#define RIGHT_ENCODER
 //#define TEST
+//#define ULTRASONIC
+#define ULTRASONIC_PARALLEL
+#define ULTRASONIC_FILTER
 
-static volatile int leftSpeed;
-static volatile int rightSpeed;
-static volatile int counter;
 
+#include "Tess.h"
 #include "simpletools.h"
 #include "DriveTrain.h"
 #include "DriveTrain.c"
 #include "Ports.h"
 #include "servo.h"
 #include "ping.h"
-#include "Tess.h"
+
+unsigned volatile int distances[10];
+unsigned volatile int filter_count;
+volatile int tess_ping;
+int distCog;
 
 int main()                    
 {
+    filter_count = 0;
     counter = 0;
     print("Hello Robot\n");
     low(LED_2);
@@ -30,16 +38,13 @@ int main()
     initDrive();
     #endif
 
-    while(1)
+    while(1)//main loop
     {
-        #ifdef TEST
-        testDrive();
-        #endif
         debug("Loop\n", 0);
-
+        button();
         setEncoders();
-
-        checkDriveTrain();
+        navigate();
+        //checkDriveTrain();
         //pause(100);   
         counter++;
     }
@@ -49,15 +54,79 @@ void stop()
     leftSpeed = 0;
     rightSpeed = 0;
 }
-void distance_parallel(void *z)
+void distance_parallel()
 {
-    
+    unsigned int stack[40 + 25];
+    debug("Starting Distance Cog!\n", 0);
+    distCog = cogstart(&distance_background, NULL, stack, sizeof(stack));
+    debug("Distance Cog Started! %d\n", distCog);
+}
+void distance_background(void *x)
+{
+    distance();
 }
 int distance()
 {
-    int ping = ping_cm(ULTRASONIC_PIN);
-    debug("Distance: %d\n", ping);
-    return ping;
+    if (filter_count >= 10)
+    {
+        filter_count = 0;
+    }
+    distances[filter_count] = ping_cm(ULTRASONIC_PIN);
+    //todo
+    #ifdef ULTRASONIC_FILTER
+    tess_ping = filter();
+    #endif
+
+    debug("Distance: %d\n", tess_ping);
+    filter_count++;
+    return tess_ping;
+}
+int filter()
+{
+    //int outliers = 0;
+    int next_check = filter_count - 1;
+    if (filter_count == 0)
+    {
+        next_check = 9;
+    }
+    //will create a variable for he distance and find the absolute value
+    int difference = distances[filter_count] - distances[next_check];
+    if (difference < 0)
+    {
+        difference = difference * -1;
+    }
+    if (difference > FILTER_AMOUNT)
+    {
+        if (filter_count == 0)
+        {
+            return distances[9];
+        }
+        else
+        {
+            return distances[filter_count-1];
+        }
+    }
+    else
+    {
+        return distances[filter_count];
+    }
+    
+}
+void average()
+{
+    if (filter_count >= 10)
+    {
+        filter_count = 0;
+    }
+    distances[filter_count] = ping_cm(ULTRASONIC_PIN);
+    tess_ping = 0;
+    for (int i=0;i<10;i++)
+    {
+        tess_ping += distances[filter_count];
+    }
+    tess_ping = tess_ping/10;
+    debug("Distance: %d\n", tess_ping);
+    filter_count++;
 }
 void debug(char *string, int data)
 {
@@ -96,14 +165,14 @@ void checkDriveTrain()
 }
 void navigate()
 {
-    int ping = distance();
-
-    if (ping < OBJECT_DISTANCE)
+    distance();
+    if (tess_ping < OBJECT_DISTANCE)
     {
         leftSpeed = 0;
         rightSpeed = 0;
         debug("Object in front\n", 0);
         high(LED_1);
+        turn();
     }
     else
     {
@@ -111,4 +180,17 @@ void navigate()
         leftSpeed = LEFT_SPEED;
         rightSpeed = RIGHT_SPEED;
     }
+}
+void button()
+{
+    #ifdef BUTTON
+    if (input(BUTTON) > 0)
+    {
+        high(LED_2);
+    }
+    else
+    {
+        low(LED_2);
+    }
+    #endif
 }

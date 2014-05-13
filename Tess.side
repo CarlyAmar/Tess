@@ -1,4 +1,10 @@
 Tess.c
+-L ../Learn/Simple Libraries/Robotics/ActivityBot/libabdrive
+-L ../Learn/Simple Libraries
+-I ../Learn/Simple Libraries/Text Devices/libfdserial
+-L ../Learn/Simple Libraries/Text Devices/libfdserial
+-I ../Learn/Simple Libraries/Motor/libservo
+-L ../Learn/Simple Libraries/Motor/libservo
 >compiler=C
 >memtype=cmm main ram compact
 >optimize=-Os
@@ -7,4 +13,5 @@ Tess.c
 >-fno-exceptions
 >-enable_pruning
 >defs::-std=c99
+>linker::-lfdserial -lservo
 >BOARD::ACTIVITYBOARD
