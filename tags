@@ -1,8 +1,0 @@
-!_TAG_FILE_FORMAT	1	/original ctags format/
-!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
-!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
-!_TAG_PROGRAM_NAME	Exuberant Ctags	//
-!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
-!_TAG_PROGRAM_VERSION	5.8	//
-MAIN_COG	/home/zachary/Documents/SimpleIDE/Tess/Tess.c	5
-main	/home/zachary/Documents/SimpleIDE/Tess/Tess.c	/^int main(void)$/
