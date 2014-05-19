@@ -17,5 +17,9 @@ void turn(); //default 90 degrees
 void stop();
 void stopLeftSide();
 void stopRightSide();
+void setEncoders(); //enables defined encoders
+void setLeftEncoder(); //enables lefts
+void setRightEncoder(); //enables right
+void checkDriveTrain(); //prints the speeds given
 
 #endif

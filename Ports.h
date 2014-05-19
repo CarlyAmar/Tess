@@ -17,6 +17,7 @@
 #define OBJECT_DISTANCE 20
 #define LEFT_SPEED 1
 #define RIGHT_SPEED 1
-#define FILTER_AMOUNT 20
+#define FILTER_AMOUNT 30
+#define DISTANCE_SIZE 10
 static int count_const = 100;
 #endif

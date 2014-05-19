@@ -47,3 +47,28 @@ void turn()
     leftSpeed = -1;
     rightSpeed = 1;
 }
+void setLeftEncoder()
+{
+    set_output(LED_1, input(LEFT_ENCODER_PIN)); //This encoder does not work
+}
+void setRightEncoder()
+{
+    set_output(LED_2, input(RIGHT_ENCODER_PIN));
+}
+void checkDriveTrain()
+{
+    debug("Left: %d", leftSpeed);
+    debug(" Right: %d\n", rightSpeed);
+}
+void setEncoders()
+{
+    //Will set present encoder outputs to the LED's
+    #ifdef LEFT_ENCODER
+    setLeftEncoder();
+    #endif
+
+    #ifdef RIGHT_ENCODER
+    setRightEncoder();
+    #endif
+}
+
