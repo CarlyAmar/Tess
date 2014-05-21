@@ -6,12 +6,12 @@
 //#define DRIVE
 //#define LEFT_ENCODER
 //#define RIGHT_ENCODER
-//#define TEST
+//#define TEST //THIS WILL NEGATE MOST OF MAIN AND JUST CALL test()
 #define ULTRASONIC
 #define ULTRASONIC_PARALLEL
 //#define ULTRASONIC_FILTER
 #define LOG
-//#define PLAYBACK
+#define PLAYBACK
 
 
 #include "Tess.h"
@@ -23,19 +23,32 @@
 #include "ping.h"
 #include "Logger.c"
 
-int main()                    
+int main(void)                    
 {
+    FILE* file;
+    logInit();
     pause(1000);
 
-    #ifdef PLAYBACK
-    playback();
+    #ifdef TEST
+    test();
+    return 0;
+    #endif
+    
+    #ifdef PLAYBACK //make sure this is before LOG because it will reopen file with write
+    file = fileInit("Main.txt", "r");
+    playback(file, "Main.txt", LOG_SIZE);
     pause(5000);
     #endif
+
     #ifdef LOG
     logInit();
-    FILE* main = fileInit("Main.txt", "w");
-    logData(main, "Hello File World!\n", 0);
-    playback(main, "Main.txt");
+    file = fileInit("Main.txt", "w");
+    logData(file, "Hello File World!\n", 0);
+    #endif
+
+    #ifdef DRIVE
+    debug("Initializing Drivetrain\n", 0);
+    initDrive();
     #endif
 
     filter_count = 0;
@@ -44,16 +57,10 @@ int main()
     low(LED_2);
     low(LED_1);
 
-    #ifdef DRIVE
-    debug("Initializing Drivetrain\n", 0);
-    initDrive();
-    #endif
-
     while(1)//main loop
     {
         //debug("Loop\n", 0);
         button();
-        setEncoders();
         navigate();
         //checkDriveTrain();
         //pause(100);   
@@ -114,4 +121,15 @@ void button()
         low(LED_2);
     }
     #endif
+}
+void test()
+{
+    logInit();
+    FILE* file = fileInit("Main.txt", "w");
+    logData(file, "This is a Test! %i \n", 42);
+    
+    FILE* test = fileInit("Main.txt", "r");
+    playback(test, "Main.txt", 100);
+    pause(5000);                 // Close the file
+    print("Finished!\n");
 }
