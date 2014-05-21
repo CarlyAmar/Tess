@@ -16,5 +16,6 @@ void debug(char *string, int data); //Will print every 100 times, include the st
                                     //in which case the second parameter is  filler
 
 void navigate(); //prints, turns on a light, and turns if soimething is close to it
+void test(); //Shove test code in here and define TEST it will only fun this function, not the rest of main()
 
 #endif

@@ -1,4 +1,5 @@
 #include "Distance.h"
+#include "ping.h"
 
 void distance_parallel()
 {

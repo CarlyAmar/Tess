@@ -19,6 +19,7 @@ void initDrive()
     debug("Start driveCog\n", 0);
     driveCog = cogstart(&drive, NULL, stack, sizeof(stack));
     debug("driveCog Started!\n", 0);
+    setEncoders();
 }
 void drive(void *x)
 {
