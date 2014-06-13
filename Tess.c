@@ -25,29 +25,30 @@
 
 int main(void)                    
 {
-    FILE* file;
+    volatile long int logged_data_count;
+    volatile long int char_count = 0;
+    volatile long int* char_count_pointer = &char_count;
+
+    robot_status = ENABLED;
+
     logInit();
     pause(1000);
 
     #ifdef TEST
-    test();
+    test(char_count_pointer);
     return 0;
     #endif
     
     #ifdef PLAYBACK //make sure this is before LOG because it will reopen file with write
-    file = fileInit("Main.txt", "r");
-    playback(file, "Main.txt", LOG_SIZE);
+    playback("Main.txt", LOG_SIZE);
     pause(5000);
     #endif
 
     #ifdef LOG
-    logInit();
-    file = fileInit("Main.txt", "w");
-    logData(file, "Hello File World!\n", 0);
+    logData("Main.txt", "Hello File World!\n", 0, char_count_pointer);
     #endif
 
     #ifdef DRIVE
-    debug("Initializing Drivetrain\n", 0);
     initDrive();
     #endif
 
@@ -57,7 +58,7 @@ int main(void)
     low(LED_2);
     low(LED_1);
 
-    while(1)//main loop
+    while(robot_status == ENABLED)//main loop
     {
         //debug("Loop\n", 0);
         button();
@@ -66,22 +67,29 @@ int main(void)
         //pause(100);   
         counter++;
     }
-}    
-void stop()
-{
-    leftSpeed = 0;
-    rightSpeed = 0;
 }
-void debug(char *string, int data)
+void test(volatile long int* char_count)
 {
+    *char_count = 5;
+    print("char_count = %d\n", (int)*char_count);
+    logInit();
+    logData("Main.txt", "This is a Test! %i \n", (int)char_count, char_count);
+    
+    //playback("Main.txt", 50);
+    pause(5000);
+    print("Finished!\n");
+}
+char* debug(char *string, int data)
+{
+    char asdf[128];
     #ifdef DEBUG
     if (counter % count_const == 0)
-    {
-        char asdf[128];
+    {        
         sprintf(asdf,string,data);
         print(asdf);
     }
     #endif
+    return asdf;
 }
 
 void navigate()
@@ -90,23 +98,41 @@ void navigate()
     if (tess_ping == 0)
     {
         debug("Ultrasonic Error!\n", 0);
+        int s1 = servo_speed(LEFT_SERVO, 0);
+        int s2 = servo_speed(RIGHT_SERVO, 0);
+        servoCheck(s1,s2,"Error: in void navigate()\n");
     }
     else
     {    
         if (tess_ping < OBJECT_DISTANCE)
         {
-            leftSpeed = 0;
-            rightSpeed = 0;
-            debug("Object in front\n", 0);
+            //TODO stop and turn
+            stop();
             high(LED_1);
-            turn();
+            turn(LEFT); //enum from drivetrain
         }
         else
         {
+            
             low(LED_1);
-            leftSpeed = LEFT_SPEED;
-            rightSpeed = RIGHT_SPEED;
         }
+    }
+}
+int detect_object()
+{
+    if (tess_ping < OBJECT_DISTANCE)
+    {
+        return 1; //object is close
+        debug("Object in front\n", 0);
+    }
+    else if (tess_ping == 0)
+    {
+        debug("Ultrasonic malfunction\n", 0);
+        return -1; //malfunction
+    }
+    else
+    {
+        return 0; //no object
     }
 }
 void button()
@@ -121,15 +147,4 @@ void button()
         low(LED_2);
     }
     #endif
-}
-void test()
-{
-    logInit();
-    FILE* file = fileInit("Main.txt", "w");
-    logData(file, "This is a Test! %i \n", 42);
-    
-    FILE* test = fileInit("Main.txt", "r");
-    playback(test, "Main.txt", 100);
-    pause(5000);                 // Close the file
-    print("Finished!\n");
 }
