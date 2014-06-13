@@ -1,8 +1,21 @@
 #include "Logger.h"
+#include <stdio.h>
 
-void logInit(void)
+int logged_data_count = 0;
+int initialized = 0;
+
+int logInit(void)
 {
-    sd_mount(DO,CLK,DI,CS);
+    if (initialized == 0)
+    {
+        sd_mount(DO,CLK,DI,CS);
+        initialized = 1;
+    }
+    return 1;
+}
+int getInitialization()
+{
+    return initialized;
 }
 FILE* fileInit(char *filename, char *permission) //w = write, r = read, a = append
 {
@@ -10,36 +23,61 @@ FILE* fileInit(char *filename, char *permission) //w = write, r = read, a = appe
     return filePointer;
 }   
 
-int logData(FILE* file, char *string, int data)
+int logData(char *fileName, char *string, int data, volatile long int* char_sum)
 {
     //char toWrite = combine(string, data);
+    FILE* file = fileInit(fileName, "w");
+    if (file != NULL)
+    {
+        logged_char_count = logged_char_count + getNumElements(string);        
 
-    fwrite(string, 1, 15, file);      // Add contents to the file
-    fclose(file);                                 // Close the file
-    debug(string, 0);
+        char buffer[sizeof(char)*sizeof(string)];
+        sprintf(buffer, string, data);
+        fwrite(buffer, 1, 15, file);
+        fclose(file);
+        debug(buffer, data);
+        *char_sum = *char_sum + sizeof(buffer);
+        return logged_data_count;
+    }
+    else
+    {
+        return 0;
+    }
+}
 
-    return 0;                    
-}
-/*
-char[] combine(char *string, int data)
+void playback(char *fileName, int chars)
 {
-    char asdf[128];
-    sprintf(asdf,string,data);
-    return(asdf);
-}
-*/
-void playback(FILE* file, char *fileName, int chars)
-{
+    FILE* file = fileInit(fileName, "r");
+    char buffer[chars*sizeof(char)];
+    fread(buffer, sizeof(char), chars, file);    
     fclose(file);
-    char s[chars];
-    file = fopen(fileName, "r");                // Reopen file for reading
+    //char s[chars];
+    print("%s", buffer);
+}
+int getNumElements(char* x)
+{
+    if (x[0] == NULL)
+    {
+        return 0;
+    }
+    else
+    {
+        int n = sizeof(x) / sizeof(x[0]);
+        return n;
+    }
+}    
+
+
+
+/*
     fread(s, 1, chars, file);                        // Read 15 characters
+//    fread(char buffer[20], strlen()+1, 1, fp);
 
     fclose(file);                                 // Close the file
     printf("First %i chars in file:\n", chars);     // Display heading
-    print("%s", s);                             // Display characters
+    print("%s", (char*)s);                             // Display characters
     print("\n");
-}   
+*/
  
 /*
 void example()
