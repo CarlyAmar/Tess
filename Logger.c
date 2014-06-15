@@ -1,7 +1,7 @@
 #include "Logger.h"
 #include <stdio.h>
 
-int logged_data_count = 0;
+volatile long int logged_data_count = 0;
 int initialized = 0;
 
 int logInit(void)

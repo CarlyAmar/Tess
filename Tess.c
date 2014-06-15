@@ -1,17 +1,16 @@
 //By Zack Alfakir
 
-
 #define DEBUG
 //#define BUTTON
-//#define DRIVE
+#define DRIVE
 //#define LEFT_ENCODER
 //#define RIGHT_ENCODER
 //#define TEST //THIS WILL NEGATE MOST OF MAIN AND JUST CALL test()
-#define ULTRASONIC
+//#define ULTRASONIC
 #define ULTRASONIC_PARALLEL
 //#define ULTRASONIC_FILTER
-#define LOG
-#define PLAYBACK
+//#define LOG
+//#define PLAYBACK
 
 
 #include "Tess.h"
@@ -25,13 +24,12 @@
 
 int main(void)                    
 {
-    volatile long int logged_data_count;
     volatile long int char_count = 0;
     volatile long int* char_count_pointer = &char_count;
 
     robot_status = ENABLED;
+    print("Robot Enabled!\n");
 
-    logInit();
     pause(1000);
 
     #ifdef TEST
@@ -40,11 +38,13 @@ int main(void)
     #endif
     
     #ifdef PLAYBACK //make sure this is before LOG because it will reopen file with write
+    logInit();
     playback("Main.txt", LOG_SIZE);
     pause(5000);
     #endif
 
     #ifdef LOG
+    logInit();
     logData("Main.txt", "Hello File World!\n", 0, char_count_pointer);
     #endif
 
@@ -57,16 +57,21 @@ int main(void)
     print("Hello Robot\n");
     low(LED_2);
     low(LED_1);
+    
+    //distance_parallel();
 
     while(robot_status == ENABLED)//main loop
     {
+        debug("loop\n",0);
         //debug("Loop\n", 0);
-        button();
+        //button();
         navigate();
         //checkDriveTrain();
         //pause(100);   
-        counter++;
+        counter++; //VERY IMPORTANT
     }
+    
+    print("Robot disabled!\n");
 }
 void test(volatile long int* char_count)
 {
@@ -89,18 +94,17 @@ char* debug(char *string, int data)
         print(asdf);
     }
     #endif
-    return asdf;
+    return *asdf;
 }
 
 void navigate()
 {
-    distance();
+    tess_ping = ping_cm(ULTRASONIC_PIN);
+    debug("Distance = %i\n", tess_ping);
     if (tess_ping == 0)
     {
         debug("Ultrasonic Error!\n", 0);
-        int s1 = servo_speed(LEFT_SERVO, 0);
-        int s2 = servo_speed(RIGHT_SERVO, 0);
-        servoCheck(s1,s2,"Error: in void navigate()\n");
+        setServo(0,0,"Error: in void navigate()\n");
     }
     else
     {    
@@ -108,12 +112,13 @@ void navigate()
         {
             //TODO stop and turn
             stop();
+            debug("Turning on LED!\n", 0);
             high(LED_1);
+            debug("About to turn!\n", 0);
             turn(LEFT); //enum from drivetrain
         }
         else
         {
-            
             low(LED_1);
         }
     }

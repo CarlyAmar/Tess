@@ -16,9 +16,7 @@ void driveForward(int x)
 {
     if (x < 0)
     {
-        int s1 = servo_speed(LEFT_SERVO, DRIVE_SPEED);
-        int s2 = servo_speed(RIGHT_SERVO, DRIVE_SPEED);
-        servoCheck(s1,s2,debug("Error: In void driveForward(int %i)",x));
+        setServo(DRIVE_SPEED,DRIVE_SPEED,debug("Error: In void driveForward(int %i)",x));
     }
     else if (x == 0)
     {
@@ -26,20 +24,14 @@ void driveForward(int x)
     }
     else
     {
-        int s1 = servo_angle(LEFT_SERVO, distToAngle(x));
-        int s2 = servo_angle(RIGHT_SERVO, distToAngle(x));
-        servoCheck(s1,s2,debug("Error: in void driveForward(int %i)",x));
+        setServo(DRIVE_SPEED,DRIVE_SPEED,debug("Error: in void driveForward(int %i)",x));
     }
 }
 int stop()
 {
-    int c;
-    {
-        int s1 = servo_speed(LEFT_SERVO, 0);
-        int s2 = servo_speed(RIGHT_SERVO, 0);
-
-        c = servoCheck(s1,s2,"Error: In void stop()\n");
-    }
+    debug("Stop called!\n", 0);
+    int c = setServo(0,0,"Error: in int stop()\n");
+    debug("C = %i\n", c);
     if (c !=0)
     {
         return -1;
@@ -88,27 +80,39 @@ void testDrive()
 }
 void turn(enum direction side)
 {
+    debug("Turn function called!\n", 0);
+    #ifdef DRIVE
     if (side == LEFT)
     {
+        debug("Turning LEFT\n", 0);
         int s1 = servo_angle(LEFT_SERVO, -1800);//negative 
         int s2 = servo_angle(RIGHT_SERVO, 1800);
         servoCheck(s1,s2,"Error: in void turn(enum direction LEFT)\n");
     }
     else if (side == RIGHT)
     {
+        debug("Turning RIGHT\n", 0);
         int s1 = servo_angle(LEFT_SERVO, 1800);
         int s2 = servo_angle(RIGHT_SERVO, -1800);
         servoCheck(s1,s2,"Error: in void turn(enum direction RIGHT)\n");
     }
-    else
-    {
-        debug("Error: Cannot Turn, Error unknown\n", 0);
-    }
+    #else //still pre-compile
+        debug("Drive not defined\n", 0);
+    #endif
+}
+int setServo(int l, int r, char* x)
+{
+    int ll = servo_speed(LEFT_SERVO, l);
+    int rr = servo_speed(RIGHT_SERVO, r);
+    int ret = servoCheck(ll,rr,x);
+    return ret;
 }
 int servoCheck(int l, int r, char* x)
 {
+    #ifdef DRIVE
     if (l != LEFT_SERVO || r != RIGHT_SERVO)
     {
+        debug(x,0);
         if (l != LEFT_SERVO)
         {
             debug("Left Servo Error Code: %i\n", l);
@@ -117,7 +121,6 @@ int servoCheck(int l, int r, char* x)
         {
             debug("Right Servo Error Code: %i\n", r);
         }
-        debug(x, 0);
         debug("Now Exiting!\n", 0);
         robot_status = DISABLED;
         return -1;
@@ -126,6 +129,10 @@ int servoCheck(int l, int r, char* x)
     {
         return 0;
     }
+    #else
+    debug("DRIVE not defined\n", 0);
+    return 0;
+    #endif
 }
 
 int distToAngle(int x)//TODO check this
