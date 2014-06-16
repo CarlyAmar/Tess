@@ -12,7 +12,6 @@
 //#define LOG
 //#define PLAYBACK
 
-
 #include "Tess.h"
 #include "simpletools.h"
 #include "Distance.c"
@@ -60,7 +59,7 @@ int main(void)
     
     //distance_parallel();
 
-    while(robot_status == ENABLED)//main loop
+    while(1)//main loop
     {
         debug("loop\n",0);
         //debug("Loop\n", 0);
@@ -99,16 +98,18 @@ char* debug(char *string, int data)
 
 void navigate()
 {
+    extern enum driveState tess_drive_state;
     tess_ping = ping_cm(ULTRASONIC_PIN);
     debug("Distance = %i\n", tess_ping);
-    if (tess_ping == 0)
+    if (tess_ping == 0 && tess_drive_state != IDLE)
     {
+        tess_drive_state = IDLE;
         debug("Ultrasonic Error!\n", 0);
         setServo(0,0,"Error: in void navigate()\n");
     }
     else
     {    
-        if (tess_ping < OBJECT_DISTANCE)
+        if (tess_ping < OBJECT_DISTANCE && tess_drive_state != TURNING)
         {
             //TODO stop and turn
             stop();
@@ -117,27 +118,11 @@ void navigate()
             debug("About to turn!\n", 0);
             turn(LEFT); //enum from drivetrain
         }
-        else
+        else if(tess_ping >= OBJECT_DISTANCE && tess_drive_state != MOVING)
         {
+            driveForward(-1);
             low(LED_1);
         }
-    }
-}
-int detect_object()
-{
-    if (tess_ping < OBJECT_DISTANCE)
-    {
-        return 1; //object is close
-        debug("Object in front\n", 0);
-    }
-    else if (tess_ping == 0)
-    {
-        debug("Ultrasonic malfunction\n", 0);
-        return -1; //malfunction
-    }
-    else
-    {
-        return 0; //no object
     }
 }
 void button()

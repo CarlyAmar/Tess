@@ -14,9 +14,10 @@ static int driveCog;
 
 void driveForward(int x)
 {
+    tess_drive_state = MOVING;
     if (x < 0)
     {
-        setServo(DRIVE_SPEED,DRIVE_SPEED,debug("Error: In void driveForward(int %i)",x));
+        setServo(DRIVE_SPEED*2,-DRIVE_SPEED,debug("Error: In void driveForward(int %i)\n",x));
     }
     else if (x == 0)
     {
@@ -24,11 +25,12 @@ void driveForward(int x)
     }
     else
     {
-        setServo(DRIVE_SPEED,DRIVE_SPEED,debug("Error: in void driveForward(int %i)",x));
+        setServo(DRIVE_SPEED,DRIVE_SPEED,debug("Error: in void driveForward(int %i)\n",x));
     }
 }
 int stop()
 {
+    tess_drive_state = IDLE;
     debug("Stop called!\n", 0);
     int c = setServo(0,0,"Error: in int stop()\n");
     debug("C = %i\n", c);
@@ -81,6 +83,7 @@ void testDrive()
 void turn(enum direction side)
 {
     debug("Turn function called!\n", 0);
+    tess_drive_state = TURNING;
     #ifdef DRIVE
     if (side == LEFT)
     {
@@ -131,6 +134,7 @@ int servoCheck(int l, int r, char* x)
     }
     #else
     debug("DRIVE not defined\n", 0);
+    debug("servoCheck\n", 0);
     return 0;
     #endif
 }

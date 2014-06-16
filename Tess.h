@@ -8,7 +8,6 @@ enum status{
 
 volatile enum status robot_status;
 
-
 static volatile int leftSpeed;
 static volatile int rightSpeed;
 static volatile int counter;

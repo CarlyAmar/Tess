@@ -7,7 +7,7 @@
 #define ULTRASONIC_PIN 2
 #define BUTTON 10
 
-#define RIGHT_SERVO 12
+#define RIGHT_SERVO 12 //Use VIN when only on USB power, 5v for extra battery pack
 #define LEFT_SERVO 13
 
 #define IR_2 13
